@@ -208,7 +208,46 @@ export class GanttChartComponent implements OnInit, OnDestroy {
   }
 
   private shortestRemainingTime(program: Process[]) {
+    const timeline: TimeSlot[] = []
+    let time = 0
+    const done: boolean[] = new Array(program.length).fill(false)
 
+
+    while (done.includes(false)) {
+      let shortest = -1
+      let shortestTime = Infinity
+     
+      for (let i = 0; i < program.length; i++) {
+        if (!done[i] && program[i].arrivalTime! <= time) {
+          if (program[i].processingTime! < shortestTime) {
+            shortestTime = program[i].processingTime!
+            shortest = i
+          }
+        }
+      }
+
+
+      if (shortest === -1) {
+        time++
+        continue
+      }
+
+
+      const p = program[shortest]
+      timeline.push({
+        processName: p.name,
+        startTime: time,
+        endTime: time + p.processingTime!
+      })
+
+
+      time += p.processingTime!
+      done[shortest] = true
+    }
+
+
+    this.timeline = timeline
+    this.totalTime = time
   }
 
   private highestResponseRatioNext(program: Process[]) {
