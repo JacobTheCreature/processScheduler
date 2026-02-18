@@ -1,1 +1,40 @@
-<p>gantt-chart.component works!</p>
+<div class="p-4" *ngIf="timeline.length > 0">
+  <h3 class="mb-3">Gantt Chart - {{ algorithm }}</h3>
+  
+  <div class="gantt-container mb-3">
+    <!-- Time scale -->
+    <div class="d-flex mb-2">
+      <div style="width: 80px;"></div>
+      <div class="flex-grow-1 d-flex justify-content-between" style="font-size: 0.75rem; color: #6c757d;">
+        <span>Time: 0</span>
+        <span>{{ totalTime }}</span>
+      </div>
+    </div>
+
+    <!-- Process rows -->
+    <div *ngFor="let processName of getProcessNames()" class="mb-2">
+      <div class="d-flex align-items-center">
+        <div style="width: 80px; font-weight: 600; font-size: 0.875rem;">{{ processName }}</div>
+        <div class="flex-grow-1" style="position: relative; height: 40px; border: 1px solid #dee2e6; background-color: #f8f9fa;">
+          <div 
+            *ngFor="let slot of getProcessSlots(processName)" 
+            [style.left.%]="getSlotLeftPosition(slot)"
+            [style.width.%]="getSlotWidth(slot)"
+            [style.background-color]="getProcessColor(slot.processName)"
+            style="position: absolute; top: 0; bottom: 0;"
+            [title]="'Time: ' + slot.startTime + '-' + slot.endTime"
+          >
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="p-4 alert alert-danger" *ngIf="hasError">
+  <strong>Error:</strong> Invalid process data. Please ensure all processes have valid arrival times and processing times greater than 0.
+</div>
+
+<div class="p-4 text-muted" *ngIf="timeline.length === 0 && !hasError">
+  <p>Enter processes and click "Generate Gantt Chart"</p>
+</div>

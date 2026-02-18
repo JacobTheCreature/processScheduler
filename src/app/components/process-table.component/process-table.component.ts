@@ -1,12 +1,8 @@
+import { OnInit } from '@angular/core';
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
-interface Process {
-  name: string,
-  arrivalTime: number | null
-  processingTime: number | null
-}
+import { SchedulerService, Process } from '../../services/scheduler.service';
 
 @Component({
   selector: 'app-process-table',
@@ -14,10 +10,8 @@ interface Process {
   templateUrl: './process-table.component.html',
   styleUrl: './process-table.component.css',
 })
-export class ProcessTableComponent {
-
-  public program: Process[] = [{ name: 'A', arrivalTime: 0, processingTime: null }]
-
+export class ProcessTableComponent implements OnInit {
+  public program: Process[] = []
   public selectedAlgorithm: string = 'RR'
   
   public algorithms = [
@@ -27,6 +21,23 @@ export class ProcessTableComponent {
     { value: 'HRRN', label: 'HRRN' },
     { value: 'Feedback', label: 'Feedback, time quantum = 1' }
   ]
+
+  constructor(private schedulerService: SchedulerService) {}
+
+  ngOnInit() {
+    this.program = this.schedulerService.getProcesses()
+    this.selectedAlgorithm = this.schedulerService.getAlgorithm()
+    // Ensure the algorithm is set in the service on init
+    this.schedulerService.setAlgorithm(this.selectedAlgorithm)
+  }
+
+  onAlgorithmChange() {
+    this.schedulerService.setAlgorithm(this.selectedAlgorithm)
+  }
+
+  onInputChange() {
+    this.schedulerService.setProcesses([...this.program])
+  }
 
   private getNextProcessName(): string {
     if (this.program.length === 0) return 'A'
@@ -38,6 +49,7 @@ export class ProcessTableComponent {
   removeProcess(index: number) {
     if (this.program.length > 1) {
       this.program.splice(index, 1)
+      this.schedulerService.setProcesses([...this.program])
     }
   }
 
@@ -48,11 +60,17 @@ export class ProcessTableComponent {
       processingTime: null
     }
     this.program.push(newProcess)
+    this.schedulerService.setProcesses([...this.program])
   }
 
   clearAll() {
-    this.program = [
-      { name: 'A', arrivalTime: null, processingTime: null }
-    ]
+    this.program = [{ name: 'A', arrivalTime: 0, processingTime: null }]
+    this.schedulerService.setProcesses([...this.program])
+  }
+
+  generateGanttChart() {
+    this.schedulerService.setProcesses([...this.program])
+    this.schedulerService.setAlgorithm(this.selectedAlgorithm)
+    this.schedulerService.triggerGenerate()
   }
 }

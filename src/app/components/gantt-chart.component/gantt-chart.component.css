@@ -1,0 +1,11 @@
+.gantt-container {
+  user-select: none;
+  overflow-x: auto;
+}
+
+.legend {
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
