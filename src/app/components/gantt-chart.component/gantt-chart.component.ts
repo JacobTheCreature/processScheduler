@@ -192,14 +192,14 @@ export class GanttChartComponent implements OnInit, OnDestroy {
         continue
       }
 
-      const p = program[shortest]
+      const currentProcess = program[shortest]
       timeline.push({
-        processName: p.name,
+        processName: currentProcess.name,
         startTime: time,
-        endTime: time + p.processingTime!
+        endTime: time + currentProcess.processingTime!
       })
 
-      time += p.processingTime!
+      time += currentProcess.processingTime!
       done[shortest] = true
     }
 
@@ -211,7 +211,6 @@ export class GanttChartComponent implements OnInit, OnDestroy {
     const timeline: TimeSlot[] = []
     let time = 0
     const done: boolean[] = new Array(program.length).fill(false)
-
 
     while (done.includes(false)) {
       let shortest = -1
@@ -226,32 +225,66 @@ export class GanttChartComponent implements OnInit, OnDestroy {
         }
       }
 
-
       if (shortest === -1) {
         time++
         continue
       }
 
-
-      const p = program[shortest]
+      const currentProcess = program[shortest]
       timeline.push({
-        processName: p.name,
+        processName: currentProcess.name,
         startTime: time,
-        endTime: time + p.processingTime!
+        endTime: time + currentProcess.processingTime!
       })
 
-
-      time += p.processingTime!
+      time += currentProcess.processingTime!
       done[shortest] = true
     }
-
 
     this.timeline = timeline
     this.totalTime = time
   }
 
   private highestResponseRatioNext(program: Process[]) {
+    const timeline: TimeSlot[] = []
+    let time = 0
+    const done: boolean[] = new Array(program.length).fill(false)
 
+    while (done.includes(false)) {
+      let best = -1
+      let bestRatio = -1
+     
+      for (let i = 0; i < program.length; i++) {
+        if (!done[i] && program[i].arrivalTime! <= time) {
+          const wait = time - program[i].arrivalTime!
+          const service = program[i].processingTime!
+          const ratio = (wait + service) / service
+         
+          if (ratio > bestRatio) {
+            bestRatio = ratio
+            best = i
+          }
+        }
+      }
+
+      if (best === -1) {
+        time++
+        continue
+      }
+
+      const currentProcess = program[best]
+      timeline.push({
+        processName: currentProcess.name,
+        startTime: time,
+        endTime: time + currentProcess.processingTime!
+      })
+
+      time += currentProcess.processingTime!
+      done[best] = true
+    }
+
+    this.timeline = timeline
+    this.totalTime = time
   }
 
   private feedback(program: Process[]) {
