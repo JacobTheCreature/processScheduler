@@ -1,59 +1,30 @@
-# Frontend
+### If you want to run this yourself follow these steps:
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.1.3.
+(Ensure you also have npm installed, if `ng serve` does not work run `npm install -g @angular/cli` then try again)
 
-## Development server
+1. Clone the repo
 
-To start a local development server, run:
+2. cd into the frontend folder
 
-```bash
-ng serve
-```
+3. run `npm i`
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+4. run `ng serve`
 
-## Code scaffolding
+5. go to localhost:4200
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+### For grading the logic look at these files:
 
-```bash
-ng generate component component-name
-```
+frontend > src > app > components > gantt-chart.component > gantt-chart.component.ts
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+This is where the main logic for the different schedular algorithms are
 
-```bash
-ng generate --help
-```
+frontend > src > app > components > process-table.component > process-table.component.ts 
 
-## Building
+This is just the logic of constructing the process table
 
-To build the project run:
 
-```bash
-ng build
-```
+### AI Acknowledgement
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+AI was used to generate the HTML and styling, though I made sure it was keeping it super simple and sraight forward.
 
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Standard logic checking while writing the algorithms 
