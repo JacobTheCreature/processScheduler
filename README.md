@@ -25,6 +25,7 @@ This is just the logic of constructing the process table
 
 ### AI Acknowledgement
 
-AI was used to generate the HTML and styling, though I made sure it was keeping it super simple and sraight forward.
+I copied the same template code from DFA-web-app and made adjusstments to the data loading as needed and used AI for some styling and HTML
 
-Standard logic checking while writing the algorithms 
+
+Standard logic checking while writing the algorithms
