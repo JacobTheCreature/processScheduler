@@ -15,6 +15,17 @@ interface ProcessState {
   remaining: number
 }
 
+interface ProcessWithCompletion {
+  name: string
+  arrival: number
+  processing: number
+  completed: boolean
+}
+
+interface ProcessWithLevel extends ProcessState {
+  level: number
+}
+
 @Component({
   selector: 'app-gantt-chart',
   imports: [CommonModule],
@@ -210,35 +221,66 @@ export class GanttChartComponent implements OnInit, OnDestroy {
   private shortestRemainingTime(program: Process[]) {
     const timeline: TimeSlot[] = []
     let time = 0
-    const done: boolean[] = new Array(program.length).fill(false)
 
-    while (done.includes(false)) {
+    // Make a copy
+    const processes = program.map(p => ({
+      name: p.name,
+      arrival: p.arrivalTime!,
+      remaining: p.processingTime!
+    }))
+
+    let lastProcess = ''
+    let lastStartTime = 0
+
+    while (processes.some(p => p.remaining > 0)) {
       let shortest = -1
-      let shortestTime = Infinity
+      let shortestRemaining = Infinity
      
-      for (let i = 0; i < program.length; i++) {
-        if (!done[i] && program[i].arrivalTime! <= time) {
-          if (program[i].processingTime! < shortestTime) {
-            shortestTime = program[i].processingTime!
+      // Find process with shortest remaining time among arrived processes
+      for (let i = 0; i < processes.length; i++) {
+        if (processes[i].remaining > 0 && processes[i].arrival <= time) {
+          if (processes[i].remaining < shortestRemaining) {
+            shortestRemaining = processes[i].remaining
             shortest = i
           }
         }
       }
 
+      // If no process has arrived advance time
       if (shortest === -1) {
         time++
         continue
       }
 
-      const currentProcess = program[shortest]
-      timeline.push({
-        processName: currentProcess.name,
-        startTime: time,
-        endTime: time + currentProcess.processingTime!
-      })
+      const currentProcess = processes[shortest]
 
-      time += currentProcess.processingTime!
-      done[shortest] = true
+      // If switching processes, save the previous timeline slot
+      if (lastProcess !== '' && lastProcess !== currentProcess.name) {
+        timeline.push({
+          processName: lastProcess,
+          startTime: lastStartTime,
+          endTime: time
+        })
+        lastStartTime = time
+      }
+
+      // If this is the first execution or we just pushed a process
+      if (lastProcess === '' || lastProcess !== currentProcess.name) {
+        lastProcess = currentProcess.name
+        lastStartTime = time
+      }
+
+      time++
+      currentProcess.remaining--
+    }
+
+    // Push the final timeline slot
+    if (lastProcess !== '') {
+      timeline.push({
+        processName: lastProcess,
+        startTime: lastStartTime,
+        endTime: time
+      })
     }
 
     this.timeline = timeline
@@ -288,7 +330,76 @@ export class GanttChartComponent implements OnInit, OnDestroy {
   }
 
   private feedback(program: Process[]) {
+    const timeline: TimeSlot[] = []
+    let time = 0
+   
+    const s0: ProcessWithLevel[] = []
+    const s1: ProcessWithLevel[] = []
+    const s2: ProcessWithLevel[] = []
+   
+    const processes = program.map(p => ({
+      name: p.name,
+      arrival: p.arrivalTime!,
+      remaining: p.processingTime!,
+      level: 0
+    }))
 
+    processes.sort((a, b) => a.arrival - b.arrival)
+
+    let i = 0
+
+    while (s0.length > 0 || s1.length > 0 || s2.length > 0 || i < processes.length) {
+      // Add arrived processes to stack 0
+      while (i < processes.length && processes[i].arrival <= time) {
+        s0.push({ ...processes[i] })
+        i++
+      }
+
+      let currentProcess: ProcessWithLevel | undefined
+      if (s0.length > 0) {
+        currentProcess = s0.shift()!
+      } else if (s1.length > 0) {
+        currentProcess = s1.shift()!
+      } else if (s2.length > 0) {
+        currentProcess = s2.shift()!
+      } else {
+        time = processes[i].arrival
+        continue
+      }
+
+      const timeSlice = Math.min(1, currentProcess.remaining)
+     
+      timeline.push({
+        processName: currentProcess.name,
+        startTime: time,
+        endTime: time + timeSlice
+      })
+
+      time += timeSlice
+      currentProcess.remaining -= timeSlice
+
+      // Add new arrivals
+      while (i < processes.length && processes[i].arrival <= time) {
+        s0.push({ ...processes[i] })
+        i++
+      }
+
+      // Move to next stack if not done
+      if (currentProcess.remaining > 0) {
+        if (currentProcess.level === 0) {
+          currentProcess.level = 1
+          s1.push(currentProcess)
+        } else if (currentProcess.level === 1) {
+          currentProcess.level = 2
+          s2.push(currentProcess)
+        } else {
+          s2.push(currentProcess)
+        }
+      }
+    }
+
+    this.timeline = timeline
+    this.totalTime = time
   }
 
   getProcessColor(processName: string): string {
